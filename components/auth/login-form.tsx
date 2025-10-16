@@ -37,8 +37,10 @@ export function LoginForm() {
           title: "Login realizado com sucesso!",
           description: "Você será redirecionado...",
         });
-        router.push("/");
-        router.refresh();
+        // Dar tempo para o cookie ser setado antes de redirecionar
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 500);
       }
     } catch (error) {
       toast({
