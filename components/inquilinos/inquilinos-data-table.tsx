@@ -158,7 +158,16 @@ export function InquilinosDataTable({ initialData }: InquilinosDataTableProps) {
           ]}
         />
         <CardContent className="p-6">
-          <DataTable columns={columns} data={filteredData} onRowClick={handleView} />
+          <DataTable
+            columns={columns}
+            data={filteredData}
+            onRowClick={handleView}
+            meta={{
+              onView: handleView,
+              onEdit: handleEdit,
+              onDelete: setDeleteId,
+            }}
+          />
         </CardContent>
       </Card>
 

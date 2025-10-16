@@ -169,6 +169,11 @@ export function ProprietariosDataTable({
             columns={columns}
             data={filteredData}
             onRowClick={handleView}
+            meta={{
+              onView: handleView,
+              onEdit: handleEdit,
+              onDelete: setDeleteId,
+            }}
           />
         </CardContent>
       </Card>
