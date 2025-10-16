@@ -2,10 +2,21 @@
 
 import { useState, useEffect } from "react"
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,14 +42,56 @@ export function ContratosTable({ initialContratos, imoveis, inquilinos }: Contra
   const [showWizard, setShowWizard] = useState(false)
   const [viewingItem, setViewingItem] = useState<any>(null)
   const [showSheet, setShowSheet] = useState(false)
+  const [deleteId, setDeleteId] = useState<number | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("todos")
   const [contratos, setContratos] = useState(initialContratos)
   const { toast } = useToast()
+  const router = useRouter()
 
   const handleView = (contrato: any) => {
     setViewingItem(contrato)
     setShowSheet(true)
+  }
+
+  const handleEdit = (contrato: any) => {
+    // Redirecionar para página de edição (não implementado ainda)
+    toast({
+      title: "Em desenvolvimento",
+      description: "A funcionalidade de edição de contratos está em desenvolvimento.",
+    })
+  }
+
+  const handleDelete = async () => {
+    if (!deleteId) return
+
+    try {
+      const { deleteContrato } = await import("@/lib/actions/contratos")
+      const result = await deleteContrato(deleteId)
+
+      if (result.success) {
+        toast({
+          title: "Sucesso",
+          description: "Contrato excluído com sucesso",
+        })
+        setContratos(contratos.filter((c) => c.id !== deleteId))
+        router.refresh()
+      } else {
+        toast({
+          title: "Erro",
+          description: result.error || "Erro ao excluir contrato",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir contrato",
+        variant: "destructive",
+      })
+    } finally {
+      setDeleteId(null)
+    }
   }
 
   useEffect(() => {
@@ -281,7 +334,7 @@ export function ContratosTable({ initialContratos, imoveis, inquilinos }: Contra
                           <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation()
-                              // TODO: Implement edit
+                              handleEdit(contrato)
                             }}
                           >
                             <Edit className="mr-2 h-4 w-4" />
@@ -291,7 +344,7 @@ export function ContratosTable({ initialContratos, imoveis, inquilinos }: Contra
                           <DropdownMenuItem
                             onClick={(e) => {
                               e.stopPropagation()
-                              // TODO: Implement delete
+                              setDeleteId(contrato.id)
                             }}
                             className="text-destructive focus:text-destructive"
                           >
@@ -317,6 +370,23 @@ export function ContratosTable({ initialContratos, imoveis, inquilinos }: Contra
           inquilinos={inquilinos}
         />
       )}
+
+      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este contrato? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <ContratoDetailsSheet
         contrato={viewingItem}
