@@ -14,10 +14,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check for session cookie (can be with __Secure- prefix in production)
+  // Check for session cookie in multiple formats
+  // - better-auth.session_token (desenvolvimento/Safari)
+  // - __Secure-better-auth.session_token (produção HTTPS)
   const sessionToken =
-    request.cookies.get("__Secure-better-auth.session_token") ||
-    request.cookies.get("better-auth.session_token");
+    request.cookies.get("better-auth.session_token") ||
+    request.cookies.get("__Secure-better-auth.session_token");
 
   if (!sessionToken) {
     return NextResponse.redirect(new URL("/login", request.url));
